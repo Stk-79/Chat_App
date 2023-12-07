@@ -7,6 +7,7 @@ import { doc, setDoc } from "firebase/firestore";
 
 const Register = () => {
   const [err, setErr] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const displayName = e.target[0].value;
@@ -15,17 +16,10 @@ const Register = () => {
     const file = e.target[3].files[0];
 
     try {
+      //User Created
       const res = await createUserWithEmailAndPassword(auth, email, password);
-      // .then((userCredential) => {
-      //   const user = userCredential.user;
-      //   console.log(user);
-      // })
-      // .catch((error) => {
-      //   const errorCode = error.code;
-      //   const errorMessage = error.Message;
-      // });
-
       const storageRef = ref(storage, displayName);
+
       const uploadTask = uploadBytesResumable(storageRef, file);
 
       uploadTask.on(
@@ -34,7 +28,6 @@ const Register = () => {
         },
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-            // console.log();
             await updateProfile(res.user, {
               displayName,
               photoURL: downloadURL,
@@ -55,7 +48,7 @@ const Register = () => {
   return (
     <div className="formContainer">
       <div className="formWrapper">
-        <span className="logo">We Chat</span>
+        <span className="logo">Chatterr</span>
         <span className="title">Register</span>
         <form onSubmit={handleSubmit}>
           <input type="text" placeholder="display name"></input>
@@ -67,7 +60,7 @@ const Register = () => {
             <span>Add an avatar</span>
           </label>
           <button>Sign Up</button>
-          {err && <span>Something Went wrong!!</span>}
+          {err && <span>Something went wrong!!</span>}
         </form>
         <p>
           Already have an existing account? <u>Login.</u>
