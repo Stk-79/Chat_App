@@ -4,7 +4,7 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, db, storage } from "../firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { doc, setDoc } from "firebase/firestore";
-import { useNavigate,Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Register = () => {
   const [err, setErr] = useState(false);
@@ -18,18 +18,15 @@ const Register = () => {
     const file = e.target[3].files[0];
 
     try {
-      //User Created
+      //Create User
       const res = await createUserWithEmailAndPassword(auth, email, password);
       const storageRef = ref(storage, displayName);
 
-      const uploadTask = uploadBytesResumable(storageRef, file);
+      // const uploadTask = uploadBytesResumable(storageRef, file);
 
-      uploadTask.on(
-        (error) => {
-          setErr(true);
-        },
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+      await uploadBytesResumable(storageRef, file).then(() => {
+        getDownloadURL(storageRef).then(async (downloadURL) => {
+          try {
             await updateProfile(res.user, {
               displayName,
               photoURL: downloadURL,
@@ -43,9 +40,12 @@ const Register = () => {
 
             await setDoc(doc(db, "userChats", res.user.uid), {});
             navigate("/");
-          });
-        }
-      );
+          } catch (err) {
+            console.log(err);
+            setErr(true);
+          }
+        });
+      });
     } catch (err) {
       setErr(true);
     }
@@ -68,7 +68,7 @@ const Register = () => {
           {err && <span>Something went wrong!!</span>}
         </form>
         <p>
-          Already have an existing account? <Link to="/register">Sign In</Link>
+          Already have an existing account? <Link to="/login">Sign In</Link>
         </p>
       </div>
     </div>
